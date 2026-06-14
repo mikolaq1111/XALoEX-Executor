@@ -355,22 +355,22 @@ local function addScaleFeedback(button, defaultScale, hoverScale)
     uiScale.Parent = button
     
     button.MouseEnter:Connect(function()
-        TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.QuadOut), {Scale = hoverScale}):Play()
+        TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = hoverScale}):Play()
     end)
     
     button.MouseLeave:Connect(function()
-        TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.QuadOut), {Scale = defaultScale}):Play()
+        TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = defaultScale}):Play()
     end)
     
     button.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            TweenService:Create(uiScale, TweenInfo.new(0.1, Enum.EasingStyle.QuadOut), {Scale = defaultScale * 0.95}):Play()
+            TweenService:Create(uiScale, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = defaultScale * 0.95}):Play()
         end
     end)
     
     button.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            TweenService:Create(uiScale, TweenInfo.new(0.1, Enum.EasingStyle.QuadOut), {Scale = hoverScale}):Play()
+            TweenService:Create(uiScale, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = hoverScale}):Play()
         end
     end)
 end
@@ -381,14 +381,14 @@ addScaleFeedback(ClearBtn, 1.0, 1.05)
 
 -- Close Button Hover
 CloseBtn.MouseEnter:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.QuadOut), {
+    TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         BackgroundColor3 = Color3.fromRGB(247, 37, 133),
         TextColor3 = Color3.fromRGB(255, 255, 255)
     }):Play()
 end)
 
 CloseBtn.MouseLeave:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.QuadOut), {
+    TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         BackgroundColor3 = Color3.fromRGB(35, 20, 25),
         TextColor3 = Color3.fromRGB(247, 37, 133)
     }):Play()
@@ -397,7 +397,7 @@ end)
 -- Shimmer function for Execute button
 local function runShimmer()
     executeGradient.Offset = Vector2.new(-1, 0)
-    TweenService:Create(executeGradient, TweenInfo.new(1.0, Enum.EasingStyle.QuadOut), {
+    TweenService:Create(executeGradient, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Offset = Vector2.new(1, 0)
     }):Play()
 end
@@ -535,15 +535,15 @@ local function setMenuState(openState)
         MainFrame.GroupTransparency = 1
         ScaleConstraint.Scale = 0.6
         
-        local openScale = TweenService:Create(ScaleConstraint, TweenInfo.new(0.4, Enum.EasingStyle.OutBack), {Scale = 1.0})
-        local openFade = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.QuadOut), {GroupTransparency = 0})
+        local openScale = TweenService:Create(ScaleConstraint, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1.0})
+        local openFade = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {GroupTransparency = 0})
         
         openScale:Play()
         openFade:Play()
         openScale.Completed:Wait()
     else
-        local closeScale = TweenService:Create(ScaleConstraint, TweenInfo.new(0.3, Enum.EasingStyle.InBack), {Scale = 0.6})
-        local closeFade = TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.QuadIn), {GroupTransparency = 1})
+        local closeScale = TweenService:Create(ScaleConstraint, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Scale = 0.6})
+        local closeFade = TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {GroupTransparency = 1})
         
         closeScale:Play()
         closeFade:Play()
@@ -600,11 +600,11 @@ task.spawn(function()
     while true do
         local remote = ReplicatedStorage:FindFirstChild("XaloexRemote")
         if remote and remote:IsA("RemoteFunction") then
-            TweenService:Create(StatusDot, TweenInfo.new(0.3, Enum.EasingStyle.QuadOut), {
+            TweenService:Create(StatusDot, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 BackgroundColor3 = Color3.fromRGB(80, 220, 100) -- Connect green
             }):Play()
         else
-            TweenService:Create(StatusDot, TweenInfo.new(0.3, Enum.EasingStyle.QuadOut), {
+            TweenService:Create(StatusDot, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 BackgroundColor3 = Color3.fromRGB(240, 80, 80) -- Disconnect red
             }):Play()
         end
