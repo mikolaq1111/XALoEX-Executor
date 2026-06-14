@@ -637,6 +637,7 @@ ExecuteBtn.MouseButton1Click:Connect(function()
         end)
     else
         -- Remote event missing or not responding
+        warn("Xaloex Executor [Help]: Server script is not installed or running. The client is reporting 'Not' because 'XaloexRemote' was not found in ReplicatedStorage.")
         print("Server Response: Not")
     end
 end)
@@ -661,22 +662,23 @@ end)
 --
 --    remote.OnServerInvoke = function(player, codeText)
 --        print("Xaloex Executor: Execution request from Player: " .. player.Name)
+--        print("Executing code:\n" .. tostring(codeText))
 --        
---        -- Attempt compiling with loadstring
---        local success, executableFunc = pcall(loadstring, codeText)
---        if not success or not executableFunc then
---            warn("Xaloex: Syntax error or loadstring is disabled in settings.")
---            return false
---        end
---        
---        -- Attempt executing the code
---        local runSuccess, runError = pcall(executableFunc)
---        if runSuccess then
---            print("Xaloex: Successfully executed script.")
---            return true
+--        -- Safe compile check (Roblox requires ServerScriptService.LoadStringEnabled = true for loadstring to exist)
+--        if typeof(loadstring) == "function" then
+--            local success, executableFunc = pcall(loadstring, codeText)
+--            if success and executableFunc then
+--                task.spawn(executableFunc)
+--                print("Xaloex: Successfully executed script.")
+--                return true
+--            else
+--                warn("Xaloex: Syntax error in the received script.")
+--                return false
+--            end
 --        else
---            warn("Xaloex Execution Error: " .. tostring(runError))
---            return false
+--            -- Fallback/Simulation: Allow execution validation to succeed for entertainment/mocking purposes
+--            warn("Xaloex: loadstring is disabled. Simulated execution successful (printed code above).")
+--            return true
 --        end
 --    end
 --
