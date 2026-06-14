@@ -194,7 +194,7 @@ CodeScrollContainer.ScrollBarThickness = 6
 CodeScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(114, 9, 183)
 CodeScrollContainer.ScrollBarImageTransparency = 0.4
 CodeScrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-CodeScrollContainer.AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y
+CodeScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
 CodeScrollContainer.Parent = MainFrame
 
 local scrollCorner = Instance.new("UICorner")
