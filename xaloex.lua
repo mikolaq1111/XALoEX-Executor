@@ -660,25 +660,88 @@ end)
 --        remote.Parent = ReplicatedStorage
 --    end
 --
+--    -- Helper to resolve paths like workspace.Folder.Model and destroy it under FE
+--    local function tryParseAndDestroy(codeText)
+--        -- Clean comments and squeeze whitespaces
+--        local clean = codeText:gsub("%-%-[^\n]*", ""):gsub("%s+", " ")
+--        
+--        -- Match: path:Destroy() or path:destroy()
+--        local path = clean:match("^%s*(.-)%s*:%s*[Dd]estroy%s*%(%s*%)%s*$")
+--        if not path then return nil end
+--        
+--        -- Remove remaining whitespace in the path string
+--        path = path:gsub("%s*", "")
+--        
+--        local parts = {}
+--        for part in path:gmatch("[^%.]+") do
+--            table.insert(parts, part)
+--        end
+--        
+--        local startIdx = 1
+--        if parts[1] == "game" then
+--            if parts[2] == "Workspace" or parts[2] == "workspace" then
+--                startIdx = 3
+--            else
+--                return false, "Only Workspace paths are supported in loadstring fallback."
+--            end
+--        elseif parts[1] == "workspace" or parts[1] == "Workspace" then
+--            startIdx = 2
+--        end
+--        
+--        local current = workspace
+--        for i = startIdx, #parts do
+--            local child = current:FindFirstChild(parts[i])
+--            if not child then
+--                return false, "Object '" .. parts[i] .. "' not found in " .. current:GetFullName()
+--            end
+--            current = child
+--        end
+--        
+--        if current == workspace then
+--            return false, "Cannot destroy workspace itself."
+--        end
+--        
+--        local name = current.Name
+--        current:Destroy() -- Destroys the model on the server (replicates to everyone under FE)
+--        return true, "Successfully destroyed '" .. name .. "' on the server for all players."
+--    end
+--
 --    remote.OnServerInvoke = function(player, codeText)
 --        print("Xaloex Executor: Execution request from Player: " .. player.Name)
 --        print("Executing code:\n" .. tostring(codeText))
 --        
---        -- Safe compile check (Roblox requires ServerScriptService.LoadStringEnabled = true for loadstring to exist)
+--        -- 1. If loadstring is enabled in ServerScriptService
 --        if typeof(loadstring) == "function" then
 --            local success, executableFunc = pcall(loadstring, codeText)
 --            if success and executableFunc then
---                task.spawn(executableFunc)
---                print("Xaloex: Successfully executed script.")
---                return true
+--                local runSuccess, runError = pcall(executableFunc)
+--                if runSuccess then
+--                    print("Xaloex: Successfully executed script.")
+--                    return true
+--                else
+--                    warn("Xaloex Runtime Error: " .. tostring(runError))
+--                    return false
+--                end
 --            else
---                warn("Xaloex: Syntax error in the received script.")
+--                warn("Xaloex Compile Error: " .. tostring(executableFunc))
 --                return false
 --            end
 --        else
---            -- Fallback/Simulation: Allow execution validation to succeed for entertainment/mocking purposes
---            warn("Xaloex: loadstring is disabled. Simulated execution successful (printed code above).")
---            return true
+--            -- 2. Fallback parser if loadstring is disabled
+--            warn("Xaloex: loadstring is disabled on server. Checking for fallback command...")
+--            local success, msg = tryParseAndDestroy(codeText)
+--            if success ~= nil then
+--                if success then
+--                    print("Xaloex Fallback Success: " .. msg)
+--                    return true
+--                else
+--                    warn("Xaloex Fallback Error: " .. msg)
+--                    return false
+--                end
+--            end
+--            
+--            warn("Xaloex Fallback: Loadstring is disabled. Command not supported in simulated mode.")
+--            return false
 --        end
 --    end
 --
